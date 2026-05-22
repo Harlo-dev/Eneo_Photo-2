@@ -1,69 +1,91 @@
-/* Eneo Photo - Theme variables */
+/* Eneo Photo - Cloud dashboard theme */
 :root {
-  --bg-primary: #ffffff;
-  --bg-secondary: #f8f9fa;
-  --bg-tertiary: #e8eaed;
-  --bg-hover: #f1f3f4;
-  --bg-sidebar: #ffffff;
+  --navy: #1a2744;
+  --navy-light: #243352;
+  --navy-muted: rgba(255, 255, 255, 0.65);
+  --navy-active-bg: rgba(91, 141, 239, 0.22);
+  --navy-active-text: #7eb3ff;
+
+  --bg-primary: #eef3fa;
+  --bg-secondary: #ffffff;
+  --bg-tertiary: #dce6f5;
+  --bg-hover: #e8f0fc;
+  --bg-sidebar: var(--navy);
   --bg-modal: #ffffff;
-  --bg-overlay: rgba(0, 0, 0, 0.5);
+  --bg-overlay: rgba(26, 39, 68, 0.45);
+  --bg-card: #ffffff;
+  --bg-search: #e3ecf8;
 
-  --text-primary: #202124;
-  --text-secondary: #5f6368;
-  --text-muted: #80868b;
+  --text-primary: #1a2744;
+  --text-secondary: #5a6b8a;
+  --text-muted: #8b9bb5;
   --text-inverse: #ffffff;
+  --heading: #1a2744;
 
-  --accent: #1a73e8;
-  --accent-hover: #1557b0;
-  --accent-light: #e8f0fe;
-  --danger: #d93025;
-  --danger-hover: #b3261e;
-  --success: #188038;
-  --warning: #f9ab00;
+  --accent: #4a7fd4;
+  --accent-hover: #3a6fc4;
+  --accent-light: #d6e6ff;
+  --danger: #e85d5d;
+  --danger-hover: #d04545;
+  --success: #2db89a;
+  --warning: #f5a623;
 
-  --border: #dadce0;
-  --border-light: #e8eaed;
-  --shadow-sm: 0 1px 2px rgba(60, 64, 67, 0.1);
-  --shadow-md: 0 2px 8px rgba(60, 64, 67, 0.15);
-  --shadow-lg: 0 4px 16px rgba(60, 64, 67, 0.2);
+  --cat-photos: #e85d6a;
+  --cat-archive: #2db89a;
+  --cat-videos: #f5a623;
+  --cat-locked: #4a7fd4;
+  --folder-work: #9b6dd7;
+  --folder-personal: #2db89a;
+  --folder-school: #e87aab;
+  --folder-archive: #4a7fd4;
 
-  --radius-sm: 8px;
-  --radius-md: 12px;
-  --radius-lg: 16px;
+  --border: #d8e3f0;
+  --border-light: #e8f0fa;
+  --shadow-sm: 0 2px 8px rgba(26, 39, 68, 0.06);
+  --shadow-md: 0 6px 20px rgba(26, 39, 68, 0.1);
+  --shadow-lg: 0 12px 32px rgba(26, 39, 68, 0.14);
+
+  --radius-sm: 12px;
+  --radius-md: 18px;
+  --radius-lg: 24px;
+  --radius-xl: 28px;
   --radius-full: 50%;
 
-  --sidebar-width: 240px;
-  --topbar-height: 64px;
-  --bottom-nav-height: 56px;
+  --sidebar-width: 220px;
+  --right-panel-width: 300px;
+  --topbar-height: 72px;
+  --bottom-nav-height: 60px;
 
   --transition-fast: 150ms ease;
   --transition-normal: 250ms ease;
   --transition-slow: 350ms ease;
 
-  --blur-locked: 12px;
+  --blur-locked: 14px;
 }
 
 [data-theme="dark"] {
-  --bg-primary: #202124;
-  --bg-secondary: #292a2d;
-  --bg-tertiary: #3c4043;
-  --bg-hover: #35363a;
-  --bg-sidebar: #292a2d;
-  --bg-modal: #292a2d;
-  --bg-overlay: rgba(0, 0, 0, 0.7);
+  --bg-primary: #121a2e;
+  --bg-secondary: #1a2744;
+  --bg-tertiary: #243352;
+  --bg-hover: #2a3d5c;
+  --bg-sidebar: #0f1729;
+  --bg-modal: #1a2744;
+  --bg-overlay: rgba(0, 0, 0, 0.65);
+  --bg-card: #1a2744;
+  --bg-search: #243352;
 
-  --text-primary: #e8eaed;
-  --text-secondary: #9aa0a6;
-  --text-muted: #80868b;
-  --text-inverse: #202124;
+  --text-primary: #e8f0fc;
+  --text-secondary: #9bb0d0;
+  --text-muted: #6b82a8;
+  --heading: #e8f0fc;
 
-  --accent: #8ab4f8;
-  --accent-hover: #aecbfa;
-  --accent-light: #394457;
-  --border: #3c4043;
-  --border-light: #5f6368;
+  --accent: #7eb3ff;
+  --accent-hover: #a0c8ff;
+  --accent-light: #2a3d5c;
+  --border: #2a3d5c;
+  --border-light: #243352;
 
-  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
-  --shadow-md: 0 2px 8px rgba(0, 0, 0, 0.4);
-  --shadow-lg: 0 4px 16px rgba(0, 0, 0, 0.5);
+  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.25);
+  --shadow-md: 0 6px 20px rgba(0, 0, 0, 0.35);
+  --shadow-lg: 0 12px 32px rgba(0, 0, 0, 0.45);
 }

@@ -6,19 +6,11 @@ const App = (function () {
   let currentFilter = 'all';
   let currentAlbumId = null;
   let currentMedia = null;
+  let searchQuery = '';
   let pinMode = 'setup'; // setup | verify | change
   let pinBuffer = '';
   let pinConfirm = null;
   let pendingAction = null;
-
-  const VIEW_TITLES = {
-    recent: 'Récents',
-    albums: 'Albums',
-    archive: 'Archive',
-    locked: 'Verrouillés',
-    trash: 'Corbeille',
-    settings: 'Paramètres'
-  };
 
   async function init() {
     await Storage.openDB();
@@ -182,7 +174,6 @@ const App = (function () {
     };
 
     document.getElementById(viewMap[view])?.classList.add('active');
-    document.getElementById('view-title').textContent = VIEW_TITLES[view] || view;
 
     document.getElementById('filter-group').style.display =
       view === 'recent' ? 'flex' : 'none';
@@ -191,7 +182,40 @@ const App = (function () {
     refreshCurrentView();
   }
 
+  function filterBySearch(mediaList) {
+    if (!searchQuery.trim()) return mediaList;
+    const q = searchQuery.trim().toLowerCase();
+    return mediaList.filter((m) => m.name.toLowerCase().includes(q));
+  }
+
+  async function updateDashboard() {
+    const all = await Storage.getAllMedia();
+    const active = all.filter((m) => !m.isDeleted);
+    const photos = active.filter((m) => m.type === 'image' && !m.isArchived && !m.isLocked).length;
+    const videos = active.filter((m) => m.type === 'video' && !m.isArchived && !m.isLocked).length;
+    const archived = active.filter((m) => m.isArchived).length;
+    const locked = active.filter((m) => m.isLocked).length;
+
+    const setCount = (id, n) => {
+      const el = document.getElementById(id);
+      if (el) el.textContent = `${n} fichier${n !== 1 ? 's' : ''}`;
+    };
+    setCount('count-photos', photos);
+    setCount('count-videos', videos);
+    setCount('count-archive', archived);
+    setCount('count-locked', locked);
+
+    await Settings.updateStorageInfo();
+
+    const albums = await AlbumManager.getAlbumsWithCovers();
+    UIRenderer.renderFolderCards('folders-preview', albums.slice(0, 4), (album) =>
+      showAlbumDetail(album.id, album.name)
+    );
+    UIRenderer.renderSharedAlbums(albums, (album) => showAlbumDetail(album.id, album.name));
+  }
+
   async function refreshCurrentView() {
+    await updateDashboard();
     switch (currentView) {
       case 'recent': await renderRecent(); break;
       case 'albums':
@@ -201,30 +225,38 @@ const App = (function () {
       case 'archive': await renderArchive(); break;
       case 'locked': await renderLocked(); break;
       case 'trash': await renderTrash(); break;
-      case 'settings': Settings.updateStorageInfo(); break;
+      case 'settings': break;
     }
   }
 
   async function renderRecent() {
     const opts = { recentOnly: true };
     if (currentFilter !== 'all') opts.type = currentFilter;
-    const media = await MediaManager.getAllMedia(opts);
+    let media = await MediaManager.getAllMedia(opts);
+    media = filterBySearch(media);
+    const isEmpty = media.length === 0;
     UIRenderer.clearGrid('grid-recent');
-    UIRenderer.renderGrid('grid-recent', media, {
-      onClick: (m) => openMedia(m)
-    });
-    UIRenderer.toggleEmpty('grid-recent', 'empty-recent', media.length === 0);
+    if (!isEmpty) {
+      UIRenderer.renderGrid('grid-recent', media, {
+        onClick: (m) => openMedia(m),
+        uniform: true
+      });
+    }
+    document.getElementById('gallery-wrap')?.classList.toggle('hidden', isEmpty);
+    UIRenderer.toggleEmpty('grid-recent', 'empty-recent', isEmpty);
   }
 
   async function renderArchive() {
-    const media = await MediaManager.getAllMedia({ archivedOnly: true });
+    let media = await MediaManager.getAllMedia({ archivedOnly: true });
+    media = filterBySearch(media);
     UIRenderer.clearGrid('grid-archive');
     UIRenderer.renderGrid('grid-archive', media, { onClick: openMedia });
     UIRenderer.toggleEmpty('grid-archive', 'empty-archive', media.length === 0);
   }
 
   async function renderLocked() {
-    const media = await MediaManager.getAllMedia({ lockedOnly: true });
+    let media = await MediaManager.getAllMedia({ lockedOnly: true });
+    media = filterBySearch(media);
     const blurred = !LockManager.isSessionValid();
     UIRenderer.clearGrid('grid-locked');
     UIRenderer.renderGrid('grid-locked', media, {
@@ -241,7 +273,8 @@ const App = (function () {
   }
 
   async function renderTrash() {
-    const media = await TrashManager.getTrash();
+    let media = await TrashManager.getTrash();
+    media = filterBySearch(media);
     UIRenderer.clearGrid('grid-trash');
     UIRenderer.renderGrid('grid-trash', media, { onClick: openMedia });
     UIRenderer.toggleEmpty('grid-trash', 'empty-trash', media.length === 0);
@@ -265,17 +298,23 @@ const App = (function () {
 
   async function showAlbumDetail(albumId, name) {
     currentAlbumId = albumId;
+    currentView = 'albums';
     if (!name) {
       const album = await Storage.getAlbum(albumId);
       name = album?.name || 'Album';
     }
+    document.querySelectorAll('.nav-item, .bottom-nav-item').forEach((el) => {
+      el.classList.toggle('active', el.dataset.view === 'albums');
+    });
+    document.querySelectorAll('.view-section').forEach((sec) => sec.classList.remove('active'));
     document.getElementById('view-albums').classList.remove('active');
     const detailSec = document.getElementById('view-album-detail');
     detailSec.classList.add('active');
     const header = document.getElementById('album-detail-header');
     header.classList.remove('hidden');
     document.getElementById('album-detail-title').textContent = name;
-    const media = await AlbumManager.getAlbumMedia(albumId);
+    let media = await AlbumManager.getAlbumMedia(albumId);
+    media = filterBySearch(media);
     UIRenderer.clearGrid('grid-album');
     UIRenderer.renderGrid('grid-album', media, { onClick: openMedia });
   }
@@ -370,16 +409,38 @@ const App = (function () {
 
   /* --- Events --- */
 
+  function triggerUpload() {
+    document.getElementById('file-input').click();
+  }
+
   function bindEvents() {
     document.querySelectorAll('[data-view]').forEach((el) => {
       el.addEventListener('click', () => navigateTo(el.dataset.view));
     });
 
-    document.getElementById('upload-btn')?.addEventListener('click', () => {
-      document.getElementById('file-input').click();
+    document.getElementById('panel-upload-btn')?.addEventListener('click', triggerUpload);
+    document.getElementById('sidebar-upload-nav')?.addEventListener('click', triggerUpload);
+    document.getElementById('empty-upload-btn')?.addEventListener('click', triggerUpload);
+
+    document.getElementById('search-input')?.addEventListener('input', (e) => {
+      searchQuery = e.target.value;
+      refreshCurrentView();
     });
-    document.getElementById('empty-upload-btn')?.addEventListener('click', () => {
-      document.getElementById('file-input').click();
+
+    document.querySelectorAll('.category-card').forEach((card) => {
+      card.addEventListener('click', () => {
+        const cat = card.dataset.category;
+        if (cat === 'archive') navigateTo('archive');
+        else if (cat === 'locked') navigateTo('locked');
+        else {
+          navigateTo('recent');
+          currentFilter = cat === 'video' ? 'video' : 'image';
+          document.querySelectorAll('.filter-btn').forEach((b) => {
+            b.classList.toggle('active', b.dataset.filter === currentFilter);
+          });
+          renderRecent();
+        }
+      });
     });
 
     document.getElementById('file-input')?.addEventListener('change', (e) => {

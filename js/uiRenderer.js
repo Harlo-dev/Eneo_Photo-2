@@ -32,6 +32,7 @@ const UIRenderer = (function () {
     const item = document.createElement('div');
     item.className = 'media-item lazy';
     item.dataset.id = media.id;
+    if (options.uniform) item.dataset.title = media.name;
 
     const thumb = media.thumbnail || media.dataURL;
     if (media.type === 'video') {
@@ -90,8 +91,10 @@ const UIRenderer = (function () {
     mediaList.forEach((media, index) => {
       if (existingIds.has(media.id)) return;
       const el = createMediaElement(media, options);
-      if (index % 7 === 0) el.classList.add('wide');
-      if (index % 11 === 0) el.classList.add('tall');
+      if (!options.uniform) {
+        if (index % 7 === 0) el.classList.add('wide');
+        if (index % 11 === 0) el.classList.add('tall');
+      }
       container.appendChild(el);
     });
 
@@ -109,12 +112,80 @@ const UIRenderer = (function () {
     if (container) container.innerHTML = '';
   }
 
+  const FOLDER_ICONS = ['🗂️', '👤', '🎓', '📦', '📂', '⭐'];
+
+  function renderFolderCards(containerId, albums, onAlbumClick, options = {}) {
+    const container = document.getElementById(containerId);
+    if (!container) return;
+    container.innerHTML = '';
+    const { showAdd = false, onAdd, max = 8 } = options;
+    const slice = albums.slice(0, max);
+
+    slice.forEach((album, i) => {
+      const card = document.createElement('button');
+      card.type = 'button';
+      card.className = `folder-card tint-${i % 4}`;
+      card.innerHTML = `
+        <span class="folder-icon">${FOLDER_ICONS[i % FOLDER_ICONS.length]}</span>
+        <span class="folder-name">${escapeHtml(album.name)}</span>
+        <span class="folder-count">${album.count} fichier${album.count !== 1 ? 's' : ''}</span>
+      `;
+      card.addEventListener('click', () => onAlbumClick(album));
+      container.appendChild(card);
+    });
+
+    if (showAdd && onAdd) {
+      const add = document.createElement('button');
+      add.type = 'button';
+      add.className = 'folder-card folder-add';
+      add.textContent = '+';
+      add.title = 'Nouvel album';
+      add.addEventListener('click', onAdd);
+      container.appendChild(add);
+    }
+  }
+
+  function renderSharedAlbums(albums, onAlbumClick) {
+    const list = document.getElementById('shared-albums-list');
+    if (!list) return;
+    list.innerHTML = '';
+    const slice = albums.slice(0, 4);
+    if (!slice.length) {
+      const empty = document.createElement('p');
+      empty.className = 'storage-detail';
+      empty.textContent = 'Aucun album pour le moment';
+      list.appendChild(empty);
+      return;
+    }
+    slice.forEach((album, i) => {
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = `shared-item shared-tint-${i % 4}`;
+      btn.innerHTML = `
+        <span>
+          <span class="shared-item-name">${escapeHtml(album.name)}</span>
+          <span class="shared-item-count">${album.count} élément${album.count !== 1 ? 's' : ''}</span>
+        </span>
+        <span>📁</span>
+      `;
+      btn.addEventListener('click', () => onAlbumClick(album));
+      list.appendChild(btn);
+    });
+  }
+
   function renderAlbums(albums, onAlbumClick, onDelete) {
     const grid = document.getElementById('albums-grid');
+    const foldersRow = document.getElementById('albums-folders-row');
     const empty = document.getElementById('empty-albums');
-    if (!grid) return;
+    if (!grid && !foldersRow) return;
 
-    grid.innerHTML = '';
+    if (grid) grid.innerHTML = '';
+    if (foldersRow) {
+      renderFolderCards('albums-folders-row', albums, onAlbumClick, {
+        showAdd: true,
+        onAdd: () => document.getElementById('create-album-btn')?.click()
+      });
+    }
 
     if (!albums.length) {
       empty?.classList.remove('hidden');
@@ -122,7 +193,7 @@ const UIRenderer = (function () {
     }
     empty?.classList.add('hidden');
 
-    albums.forEach((album) => {
+    albums.forEach((album, index) => {
       const card = document.createElement('div');
       card.className = 'album-card';
       card.dataset.id = album.id;
@@ -287,6 +358,8 @@ const UIRenderer = (function () {
     renderGrid,
     clearGrid,
     renderAlbums,
+    renderFolderCards,
+    renderSharedAlbums,
     showToast,
     toggleEmpty,
     renderViewerActions,
