@@ -46,21 +46,48 @@ const Settings = (function () {
     });
   }
 
+  function formatBytes(bytes) {
+    if (bytes < 1024) return bytes + ' o';
+    if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' Ko';
+    if (bytes < 1024 * 1024 * 1024) return (bytes / (1024 * 1024)).toFixed(1) + ' Mo';
+    return (bytes / (1024 * 1024 * 1024)).toFixed(2) + ' Go';
+  }
+
+  function applyStorageUI({ usage, quota, mediaCount }) {
+    const pct = quota > 0 ? Math.min(100, Math.round((usage / quota) * 100)) : 0;
+    const left = quota > 0 ? Math.max(0, 100 - pct) : 100;
+    const usageStr = formatBytes(usage);
+    const quotaStr = quota ? formatBytes(quota) : '—';
+
+    const info = document.getElementById('storage-info');
+    if (info) {
+      info.textContent = `${mediaCount} média(s) · ${usageStr} utilisés` +
+        (quota ? ` / ${quotaStr}` : '');
+    }
+
+    const panelPct = document.getElementById('panel-storage-percent');
+    const panelDetail = document.getElementById('panel-storage-detail');
+    if (panelPct) panelPct.textContent = quota ? `${left}% restant` : 'Stockage local';
+    if (panelDetail) {
+      panelDetail.textContent = quota
+        ? `${usageStr} sur ${quotaStr} utilisés`
+        : `${usageStr} utilisés · ${mediaCount} fichier(s)`;
+    }
+
+    ['panel-storage-fill', 'settings-storage-fill'].forEach((id) => {
+      const fill = document.getElementById(id);
+      if (fill) fill.style.width = (quota ? pct : Math.min(mediaCount * 2, 100)) + '%';
+    });
+  }
+
   async function updateStorageInfo() {
-    const el = document.getElementById('storage-info');
-    if (!el) return;
     const est = await Storage.getStorageEstimate();
-    const usage = est.usage || 0;
-    const quota = est.quota || 0;
-    const format = (bytes) => {
-      if (bytes < 1024) return bytes + ' o';
-      if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' Ko';
-      if (bytes < 1024 * 1024 * 1024) return (bytes / (1024 * 1024)).toFixed(1) + ' Mo';
-      return (bytes / (1024 * 1024 * 1024)).toFixed(2) + ' Go';
-    };
     const allMedia = await Storage.getAllMedia();
-    el.textContent = `${allMedia.length} média(s) · ${format(usage)} utilisés` +
-      (quota ? ` / ${format(quota)}` : '');
+    applyStorageUI({
+      usage: est.usage || 0,
+      quota: est.quota || 0,
+      mediaCount: allMedia.filter((m) => !m.isDeleted).length
+    });
   }
 
   return {
@@ -70,6 +97,7 @@ const Settings = (function () {
     toggleTheme,
     updateAvatarUI,
     setAvatarFromFile,
-    updateStorageInfo
+    updateStorageInfo,
+    formatBytes
   };
 })();

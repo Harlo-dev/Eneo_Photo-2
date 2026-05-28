@@ -11,7 +11,7 @@
 <body>
   <!-- PIN Setup / Unlock overlay -->
   <div id="pin-overlay" class="pin-overlay hidden">
-    <div class="pin-modal">
+    <div class="pin-modal card-surface">
       <div class="pin-logo">🔒</div>
       <h2 id="pin-title">Configurer votre PIN</h2>
       <p id="pin-subtitle">Créez un code à 4 chiffres pour sécuriser vos médias</p>
@@ -24,15 +24,14 @@
   </div>
 
   <div id="app" class="app hidden">
-    <!-- Sidebar (desktop) -->
+    <!-- Sidebar -->
     <aside class="sidebar" id="sidebar">
-      <div class="sidebar-header">
-        <img src="assets/default-avatar.svg" alt="Avatar" class="avatar" id="sidebar-avatar">
-        <span class="app-name">Eneo Photo</span>
+      <div class="sidebar-profile">
+        <img src="assets/default-avatar.svg" alt="Avatar" class="avatar avatar-lg" id="sidebar-avatar">
       </div>
       <nav class="sidebar-nav" id="sidebar-nav">
         <button class="nav-item active" data-view="recent">
-          <span class="nav-icon">🏠</span><span>Récents</span>
+          <span class="nav-icon">🏠</span><span>Mes médias</span>
         </button>
         <button class="nav-item" data-view="albums">
           <span class="nav-icon">📁</span><span>Albums</span>
@@ -46,139 +45,225 @@
         <button class="nav-item" data-view="trash">
           <span class="nav-icon">🗑️</span><span>Corbeille</span>
         </button>
+      </nav>
+      <div class="sidebar-footer">
         <button class="nav-item" data-view="settings">
           <span class="nav-icon">⚙️</span><span>Paramètres</span>
         </button>
-      </nav>
-      <button class="upload-btn" id="upload-btn">
-        <span>+</span> Ajouter
-      </button>
+        <button class="nav-item nav-logout" id="sidebar-upload-nav" type="button">
+          <span class="nav-icon">⬆️</span><span>Importer</span>
+        </button>
+      </div>
     </aside>
 
-    <!-- Main content -->
-    <main class="main-content">
-      <header class="top-bar">
-        <button class="menu-toggle" id="menu-toggle" aria-label="Menu">☰</button>
-        <h1 class="view-title" id="view-title">Récents</h1>
-        <div class="top-actions">
-          <div class="filter-group" id="filter-group">
-            <button class="filter-btn active" data-filter="all">Tout</button>
-            <button class="filter-btn" data-filter="image">Photos</button>
-            <button class="filter-btn" data-filter="video">Vidéos</button>
+    <div class="app-body">
+      <!-- Main content -->
+      <main class="main-content">
+        <header class="top-bar">
+          <button class="menu-toggle" id="menu-toggle" aria-label="Menu">☰</button>
+          <div class="search-bar">
+            <span class="search-icon" aria-hidden="true">🔍</span>
+            <input type="search" id="search-input" placeholder="Rechercher vos fichiers..." autocomplete="off">
           </div>
-          <button class="screen-capture-btn" id="screen-capture-btn" title="Capture écran">📷</button>
-        </div>
-      </header>
-
-      <!-- Drop zone overlay -->
-      <div class="drop-overlay hidden" id="drop-overlay">
-        <div class="drop-message">Déposez vos fichiers ici</div>
-      </div>
-
-      <!-- Views -->
-      <section class="view-section active" id="view-recent">
-        <div class="media-grid" id="grid-recent"></div>
-        <div class="empty-state hidden" id="empty-recent">
-          <div class="empty-icon">📸</div>
-          <p>Aucun média pour le moment</p>
-          <button class="btn-primary" id="empty-upload-btn">Ajouter des photos</button>
-        </div>
-      </section>
-
-      <section class="view-section" id="view-albums">
-        <div class="albums-header">
-          <button class="btn-primary" id="create-album-btn">+ Nouvel album</button>
-        </div>
-        <div class="albums-grid" id="albums-grid"></div>
-        <div class="empty-state hidden" id="empty-albums">
-          <div class="empty-icon">📁</div>
-          <p>Aucun album créé</p>
-        </div>
-      </section>
-
-      <section class="view-section" id="view-album-detail">
-        <div class="album-detail-header hidden" id="album-detail-header">
-          <button class="back-btn" id="album-back-btn">← Retour</button>
-          <h2 id="album-detail-title"></h2>
-        </div>
-        <div class="media-grid" id="grid-album"></div>
-      </section>
-
-      <section class="view-section" id="view-archive">
-        <div class="media-grid" id="grid-archive"></div>
-        <div class="empty-state hidden" id="empty-archive">
-          <div class="empty-icon">📦</div>
-          <p>Aucun média archivé</p>
-        </div>
-      </section>
-
-      <section class="view-section" id="view-locked">
-        <div class="locked-banner" id="locked-banner">
-          <span>🔒</span> Contenu verrouillé — déverrouillez un média pour le voir
-        </div>
-        <div class="media-grid locked-grid" id="grid-locked"></div>
-        <div class="empty-state hidden" id="empty-locked">
-          <div class="empty-icon">🔒</div>
-          <p>Aucun média verrouillé</p>
-        </div>
-      </section>
-
-      <section class="view-section" id="view-trash">
-        <div class="trash-actions hidden" id="trash-actions">
-          <button class="btn-danger" id="empty-trash-btn">Vider la corbeille</button>
-        </div>
-        <div class="media-grid" id="grid-trash"></div>
-        <div class="empty-state hidden" id="empty-trash">
-          <div class="empty-icon">🗑️</div>
-          <p>Corbeille vide</p>
-        </div>
-      </section>
-
-      <section class="view-section" id="view-settings">
-        <div class="settings-panel">
-          <div class="settings-group">
-            <h3>Profil</h3>
-            <div class="profile-setting">
-              <img src="assets/default-avatar.svg" alt="Avatar" class="settings-avatar" id="settings-avatar">
-              <button class="btn-secondary" id="change-avatar-btn">Changer la photo</button>
+          <div class="top-actions">
+            <div class="filter-group" id="filter-group">
+              <button class="filter-btn active" data-filter="all">Tout</button>
+              <button class="filter-btn" data-filter="image">Photos</button>
+              <button class="filter-btn" data-filter="video">Vidéos</button>
             </div>
+            <button class="screen-capture-btn" id="screen-capture-btn" title="Capture écran">📷</button>
           </div>
-          <div class="settings-group">
-            <h3>Apparence</h3>
-            <label class="toggle-setting">
-              <span>Thème sombre</span>
-              <input type="checkbox" id="theme-toggle">
-              <span class="toggle-slider"></span>
-            </label>
-          </div>
-          <div class="settings-group">
-            <h3>Sécurité</h3>
-            <button class="btn-secondary" id="change-pin-btn">Changer le PIN</button>
-          </div>
-          <div class="settings-group">
-            <h3>Stockage</h3>
-            <p class="storage-info" id="storage-info">Calcul en cours...</p>
+        </header>
+
+        <div class="drop-overlay hidden" id="drop-overlay">
+          <div class="drop-message">Déposez vos fichiers ici</div>
+        </div>
+
+        <div class="content-scroll">
+          <!-- Récents -->
+          <section class="view-section active" id="view-recent">
+            <h2 class="section-title">Catégories</h2>
+            <div class="categories-grid" id="categories-grid">
+              <button type="button" class="category-card cat-photos" data-category="image">
+                <span class="category-icon">📷</span>
+                <span class="category-name">Photos</span>
+                <span class="category-count" id="count-photos">0 fichiers</span>
+              </button>
+              <button type="button" class="category-card cat-archive" data-category="archive">
+                <span class="category-icon">📦</span>
+                <span class="category-name">Archive</span>
+                <span class="category-count" id="count-archive">0 fichiers</span>
+              </button>
+              <button type="button" class="category-card cat-videos" data-category="video">
+                <span class="category-icon">🎬</span>
+                <span class="category-name">Vidéos</span>
+                <span class="category-count" id="count-videos">0 fichiers</span>
+              </button>
+              <button type="button" class="category-card cat-locked" data-category="locked">
+                <span class="category-icon">🔒</span>
+                <span class="category-name">Verrouillés</span>
+                <span class="category-count" id="count-locked">0 fichiers</span>
+              </button>
+            </div>
+
+            <div class="section-header-row">
+              <h2 class="section-title">Albums</h2>
+              <button class="text-link-btn" type="button" data-view="albums">Voir tout</button>
+            </div>
+            <div class="folders-row" id="folders-preview"></div>
+
+            <h2 class="section-title">Fichiers récents</h2>
+            <div class="gallery-wrap card-surface" id="gallery-wrap">
+              <div class="media-grid gallery-grid" id="grid-recent"></div>
+            </div>
+            <div class="empty-state hidden" id="empty-recent">
+              <div class="empty-icon">📸</div>
+              <p>Aucun média pour le moment</p>
+              <button class="btn-primary" id="empty-upload-btn">Ajouter des photos</button>
+            </div>
+          </section>
+
+          <!-- Albums -->
+          <section class="view-section" id="view-albums">
+            <div class="page-header">
+              <h2 class="section-title">Albums</h2>
+              <button class="btn-primary" id="create-album-btn">+ Nouvel album</button>
+            </div>
+            <div class="folders-row albums-as-folders" id="albums-folders-row"></div>
+            <div class="albums-grid hidden" id="albums-grid"></div>
+            <div class="empty-state hidden" id="empty-albums">
+              <div class="empty-icon">📁</div>
+              <p>Aucun album créé</p>
+            </div>
+          </section>
+
+          <section class="view-section" id="view-album-detail">
+            <div class="album-detail-header hidden" id="album-detail-header">
+              <button class="back-btn" id="album-back-btn">← Retour</button>
+              <h2 class="section-title" id="album-detail-title"></h2>
+            </div>
+            <div class="content-card">
+              <div class="media-grid" id="grid-album"></div>
+            </div>
+          </section>
+
+          <!-- Archive -->
+          <section class="view-section" id="view-archive">
+            <h2 class="section-title">Archive</h2>
+            <div class="content-card">
+              <div class="media-grid" id="grid-archive"></div>
+            </div>
+            <div class="empty-state hidden" id="empty-archive">
+              <div class="empty-icon">📦</div>
+              <p>Aucun média archivé</p>
+            </div>
+          </section>
+
+          <!-- Verrouillés -->
+          <section class="view-section" id="view-locked">
+            <h2 class="section-title">Médias verrouillés</h2>
+            <div class="locked-banner" id="locked-banner">
+              <span>🔒</span> Contenu verrouillé — déverrouillez un média pour le voir
+            </div>
+            <div class="content-card">
+              <div class="media-grid locked-grid" id="grid-locked"></div>
+            </div>
+            <div class="empty-state hidden" id="empty-locked">
+              <div class="empty-icon">🔒</div>
+              <p>Aucun média verrouillé</p>
+            </div>
+          </section>
+
+          <!-- Corbeille -->
+          <section class="view-section" id="view-trash">
+            <div class="page-header">
+              <h2 class="section-title">Corbeille</h2>
+              <div class="trash-actions hidden" id="trash-actions">
+                <button class="btn-danger" id="empty-trash-btn">Vider la corbeille</button>
+              </div>
+            </div>
+            <div class="content-card">
+              <div class="media-grid" id="grid-trash"></div>
+            </div>
+            <div class="empty-state hidden" id="empty-trash">
+              <div class="empty-icon">🗑️</div>
+              <p>Corbeille vide</p>
+            </div>
+          </section>
+
+          <!-- Paramètres -->
+          <section class="view-section" id="view-settings">
+            <h2 class="section-title">Paramètres</h2>
+            <div class="settings-panel card-surface">
+              <div class="settings-group">
+                <h3>Profil</h3>
+                <div class="profile-setting">
+                  <img src="assets/default-avatar.svg" alt="Avatar" class="settings-avatar" id="settings-avatar">
+                  <button class="btn-secondary" id="change-avatar-btn">Changer la photo</button>
+                </div>
+              </div>
+              <div class="settings-group">
+                <h3>Apparence</h3>
+                <label class="toggle-setting">
+                  <span>Thème sombre</span>
+                  <input type="checkbox" id="theme-toggle">
+                  <span class="toggle-slider"></span>
+                </label>
+              </div>
+              <div class="settings-group">
+                <h3>Sécurité</h3>
+                <button class="btn-secondary" id="change-pin-btn">Changer le PIN</button>
+              </div>
+              <div class="settings-group settings-group-last">
+                <h3>Stockage</h3>
+                <p class="storage-info" id="storage-info">Calcul en cours...</p>
+                <div class="storage-bar storage-bar-inline">
+                  <div class="storage-bar-fill" id="settings-storage-fill"></div>
+                </div>
+              </div>
+            </div>
+          </section>
+        </div>
+      </main>
+
+      <!-- Right panel -->
+      <aside class="right-panel" id="right-panel">
+        <button type="button" class="upload-zone" id="panel-upload-btn">
+          <span class="upload-zone-icon">⬆️</span>
+          <span class="upload-zone-text">Ajouter des fichiers</span>
+        </button>
+
+        <div class="panel-card storage-card">
+          <h3 class="panel-title">Votre stockage</h3>
+          <p class="storage-percent" id="panel-storage-percent">—</p>
+          <p class="storage-detail" id="panel-storage-detail">Calcul en cours...</p>
+          <div class="storage-bar">
+            <div class="storage-bar-fill" id="panel-storage-fill"></div>
           </div>
         </div>
-      </section>
-    </main>
+
+        <div class="panel-card shared-card">
+          <h3 class="panel-title">Vos albums</h3>
+          <div class="shared-list" id="shared-albums-list"></div>
+          <button type="button" class="btn-outline" id="panel-more-albums" data-view="albums">+ Voir les albums</button>
+        </div>
+      </aside>
+    </div>
 
     <!-- Bottom nav (mobile) -->
     <nav class="bottom-nav" id="bottom-nav">
-      <button class="bottom-nav-item active" data-view="recent">🏠</button>
-      <button class="bottom-nav-item" data-view="albums">📁</button>
-      <button class="bottom-nav-item" data-view="archive">📦</button>
-      <button class="bottom-nav-item" data-view="locked">🔒</button>
-      <button class="bottom-nav-item" data-view="trash">🗑️</button>
-      <button class="bottom-nav-item" data-view="settings">⚙️</button>
+      <button class="bottom-nav-item active" data-view="recent" title="Récents">🏠</button>
+      <button class="bottom-nav-item" data-view="albums" title="Albums">📁</button>
+      <button class="bottom-nav-item" data-view="archive" title="Archive">📦</button>
+      <button class="bottom-nav-item" data-view="locked" title="Verrouillés">🔒</button>
+      <button class="bottom-nav-item" data-view="trash" title="Corbeille">🗑️</button>
+      <button class="bottom-nav-item" data-view="settings" title="Paramètres">⚙️</button>
     </nav>
   </div>
 
-  <!-- Hidden file input -->
   <input type="file" id="file-input" accept="image/*,video/*" multiple hidden>
   <input type="file" id="avatar-input" accept="image/*" hidden>
 
-  <!-- Media viewer modal -->
   <div class="modal hidden" id="media-modal">
     <div class="modal-backdrop" id="modal-backdrop"></div>
     <div class="modal-content media-viewer">
@@ -192,10 +277,9 @@
     </div>
   </div>
 
-  <!-- Album create modal -->
   <div class="modal hidden" id="album-modal">
     <div class="modal-backdrop" id="album-modal-backdrop"></div>
-    <div class="modal-content album-form">
+    <div class="modal-content album-form card-surface">
       <h3>Nouvel album</h3>
       <input type="text" id="album-name-input" placeholder="Nom de l'album" maxlength="50">
       <div class="modal-buttons">
@@ -205,17 +289,15 @@
     </div>
   </div>
 
-  <!-- Add to album modal -->
   <div class="modal hidden" id="add-album-modal">
     <div class="modal-backdrop" id="add-album-backdrop"></div>
-    <div class="modal-content">
+    <div class="modal-content card-surface">
       <h3>Ajouter à un album</h3>
       <div class="album-picker" id="album-picker"></div>
       <button class="btn-secondary modal-close-btn" id="add-album-close">Fermer</button>
     </div>
   </div>
 
-  <!-- Toast notifications -->
   <div class="toast-container" id="toast-container"></div>
 
   <script src="js/storage.js"></script>
